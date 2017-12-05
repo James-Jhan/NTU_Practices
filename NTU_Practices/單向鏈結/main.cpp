@@ -28,6 +28,19 @@ void freenode(node* p)
     free(p);
 }
 
+int length(node* head)
+{
+    int num = 0;
+    node* q = head;
+
+    while(nullptr != q)
+    {
+        num++;
+        q = q->next;
+    }
+    return(num);
+}
+
 node* insert_node(node* head, node* ptr, node data)
 {
     node* new_node;
@@ -53,6 +66,42 @@ node* insert_node(node* head, node* ptr, node data)
     return (head);
 }
 
+node* find_node(node* head, int num)
+{
+    node* ptr;
+    ptr = head;
+
+    while(ptr != nullptr)
+    {
+        if (ptr->data == num)
+            return(ptr);
+        ptr = ptr->next;
+    }
+    return(ptr);
+}
+
+node* delete_node(node* head, node* ptr)
+{
+    node* previous;
+
+    if (ptr == head)
+        head = head->next;
+    else
+    {
+        previous = head;
+
+        while(previous->next != ptr)
+            previous = previous->next;
+
+        if (nullptr == ptr->next)
+            previous->next = nullptr;
+        else
+            previous->next = ptr->next;
+    }
+    freenode(ptr);
+    return(head);
+}
+
 int main(int argc, char *argv[])
 {
     node* head = nullptr;
@@ -67,6 +116,26 @@ int main(int argc, char *argv[])
 
         switch(op)
         {
+        case 'd':
+            cin >> value;
+            ptr = find_node(head, value);
+
+            if (nullptr != ptr)
+            {
+                head = delete_node(head, ptr);
+                cout << "Delete OK!" << endl;
+            }
+            else
+                cout << "cannot delete!" << endl;
+            break;
+        case 'f':
+            cin >> value;
+            ptr = find_node(head, value);
+            if (ptr != nullptr)
+                cout << "Find the value: " << value << endl;
+            else
+                cout << "cannot find value!" << endl;
+            break;
         case 'i':
             cin >> value;
             n.data = value;
@@ -88,10 +157,13 @@ int main(int argc, char *argv[])
                 cout << ptr->data << " ";
                 ptr = ptr->next;
             }
-            cout << endl;
+            cout << "\nQuantity is " << length(head) << endl;
             break;
         case 'q':
             return 0;;
+        default:
+            cout << "Please key in the correct command!";
+            break;
         }
 
     }
