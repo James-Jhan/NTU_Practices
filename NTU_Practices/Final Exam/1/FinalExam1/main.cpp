@@ -4,31 +4,76 @@
 
 using namespace std;
 
-struct node
- {
-     int data;
-     struct node* next;
- };
+class node
+{
+    private:
+        int data;
+        node *next;
+        friend class LinkedList;
+};
 
- node* getnode()
- {
-     node* p;
-     p = (node*)malloc(sizeof(node));
+class LinkedList
+{
+    public:
+        LinkedList();
+        void insert(int value, int mode);
+        void print();
+        void Dele();
+    private:
+        node* getnode();
+        void freenode(node *p) ;
+        void insert_node(node *ptr, int value, int mode);
 
-     if (NULL == p)
-     {
-         cout << "記憶體不足" << endl;
-         exit(1);
-     }
-     return(p);
- }
+        node *head;
+};
 
-node* insert_Pnode(node* head, node* ptr, node data)
+LinkedList::LinkedList()
+{
+    head = NULL;
+}
+
+node* LinkedList::getnode()
+{
+    node* p;
+    p = (node*)malloc(sizeof(node));
+
+    if (NULL == p)
+    {
+        cout << "記憶體不足" << endl;
+        exit(1);
+    }
+    return(p);
+}
+
+void LinkedList::Dele()
+{
+    free(head);
+    head = NULL;
+}
+
+void LinkedList::insert(int value, int mode)
+{
+    node *ptr;
+
+    ptr = head;
+    if(head==NULL)
+    {
+        insert_node(NULL, value, mode);
+    }
+    else
+    {
+        while(ptr->next != NULL)
+            ptr = ptr->next;
+        insert_node(ptr, value, mode);
+    }
+}
+
+void LinkedList::insert_node(node* ptr, int value, int mode)
 {
     node* new_node;
     new_node = getnode();
-    *new_node = data;
-    new_node->next = NULL;
+    new_node->data = value;
+    new_node->next = (1 == mode) ? NULL : head;
 
     if (NULL == ptr)
     {
@@ -38,68 +83,70 @@ node* insert_Pnode(node* head, node* ptr, node data)
     else
     {
         if (NULL == ptr->next)
-            ptr->next = new_node;
+        {
+            if (1 == mode)
+                ptr->next = new_node;
+            else
+                head = new_node;
+        }
         else
         {
-            new_node->next = ptr->next;
-            ptr->next = new_node;
+            if (1 == mode)
+            {
+                new_node->next = ptr->next;
+                ptr->next = new_node;
+            }
+            else
+            {
+                new_node->next = head;
+                head = new_node;
+            }
         }
     }
-    return(head);
 }
 
-node* insert_Nnode(node* head, node* ptr, node data)
+void LinkedList::print()
 {
-    node* new_node;
-    new_node = getnode();
-    *new_node = data;
-    new_node->next = head;
-
-    if (NULL == ptr)
+    node *q = head;
+    while (q != NULL)
     {
-        new_node->next = head;
-        head = new_node;
+        cout << q->data << " ";
+        q = q->next;
     }
-    else
-    {
-        if (NULL == ptr->next)
-            head = new_node;
-        else
-        {
-            new_node->next = head;
-            head = new_node;
-        }
-    }
-    return(head);
 }
 
+bool isNatureNum(int value)
+{
+    if (0 < value)
+        return true;
+
+    cout << value << "不是一個正整數" << endl << endl;
+    system("pause");
+    system("cls");
+    return false;
+}
 
 int main()
 {
     int mode;
     int value;
+    int cnt;
     bool isPrimeNum;
     string str;
     vector<int> m_Store;
 
-    node* head = NULL;
-    node* ptr;
-    node n;
+    LinkedList m_List;
 
 
     while(1)
     {
+        cnt = 0;
         isPrimeNum = true;
         cout << "請輸入一個正整數：";
         cin >> value;
         cout << endl;
-        if (value <0 || value == 0)
-        {
-            cout << value << "不是一個正整數" << endl << endl;
-            system("pause");
-            system("cls");
+        if (false == isNatureNum(value))
             continue;
-        }
 
         for (int i = 1; i <= value; ++i)
         {
@@ -108,16 +155,17 @@ int main()
                 m_Store.push_back(i);
                 if (1 != i && value != i)
                     isPrimeNum = false;
+                ++cnt;
             }
         }
 
-        cout << value << "的因數有：";
+        cout << value << " 的因數有 " << cnt << " 個：" << endl;
         for (int i = 0; i < m_Store.size(); ++i)
             cout << m_Store[i] << " ";
-        cout << endl;
+        cout << endl << endl;
 
-        str = (true == isPrimeNum) ? "是質數" : "不是質數";
-        cout << value << str << endl << endl;
+        str = (true == isPrimeNum) ? " 是質數" : " 不是質數";
+        cout << "所以 " << value << str << endl << endl;
 
         puts("選擇顯示模式：");
         puts("1. 順序印出因數");
@@ -132,63 +180,23 @@ int main()
         {
         case 1:
             for (int i = 0; i < m_Store.size(); ++i)
-            {
-                n.data = m_Store[i];
-                ptr =head;
+                m_List.insert(m_Store[i], mode);
 
-                if (NULL == head)
-                    head = insert_Pnode(head, NULL, n);
-                else
-                {
-                    while(NULL != ptr->next)
-                        ptr = ptr->next;
-                    head = insert_Pnode(head, ptr, n);
-                }
-            }
-
-            ptr = head;
-            cout << "順序列出因數：" << endl;
-            if (NULL != ptr)
-            {
-                while (NULL != ptr)
-                {
-                    cout << ptr->data << " ";
-                    ptr = ptr->next;
-                }
-            }
+            cout << "順序列出 " << cnt << " 個因數：" << endl;
+            m_List.print();
             break;
         case 2:
             for (int i = 0; i < m_Store.size(); ++i)
-            {
-                n.data = m_Store[i];
-                ptr =head;
+                m_List.insert(m_Store[i], mode);
 
-                if (NULL == head)
-                    head = insert_Nnode(head, NULL, n);
-                else
-                {
-                    while(NULL != ptr->next)
-                        ptr = ptr->next;
-                    head = insert_Nnode(head, ptr, n);
-                }
-            }
-
-            ptr = head;
-            cout << "反序列出因數：" << endl;
-            if (NULL != ptr)
-            {
-                while (NULL != ptr)
-                {
-                    cout << ptr->data << " ";
-                    ptr = ptr->next;
-                }
-            }
+            cout << "反序列出 " << cnt << " 個因數：" << endl;
+            m_List.print();
             break;
         case 3:
             return 0;
         }
 
-        head = NULL;
+        m_List.Dele();
         m_Store.erase(m_Store.begin(), m_Store.begin() + m_Store.size());
 
         cout << endl << endl;
